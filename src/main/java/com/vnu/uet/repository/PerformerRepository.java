@@ -1,6 +1,7 @@
 package com.vnu.uet.repository;
 
 import com.vnu.uet.domain.Performer;
+import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface PerformerRepository extends JpaRepository<Performer, Long> {}
+public interface PerformerRepository extends JpaRepository<Performer, Long> {
+    List<Performer> findAllByNodeId(Long nodeId);
+}

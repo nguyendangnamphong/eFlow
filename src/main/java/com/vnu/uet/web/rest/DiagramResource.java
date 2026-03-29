@@ -1,20 +1,20 @@
 package com.vnu.uet.web.rest;
 
 import com.vnu.uet.service.*;
+import com.vnu.uet.service.DiagramService;
 import com.vnu.uet.service.dto.*;
+import jakarta.validation.Valid;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Value;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/workflow")
@@ -29,11 +29,18 @@ public class DiagramResource {
     private final NodeService nodeService;
     private final RelateNodeService relateNodeService;
     private final SwitchNodeService switchNodeService;
+    private final DiagramService diagramService;
 
-    public DiagramResource(NodeService nodeService, RelateNodeService relateNodeService, SwitchNodeService switchNodeService) {
+    public DiagramResource(
+        NodeService nodeService,
+        RelateNodeService relateNodeService,
+        SwitchNodeService switchNodeService,
+        DiagramService diagramService
+    ) {
         this.nodeService = nodeService;
         this.relateNodeService = relateNodeService;
         this.switchNodeService = switchNodeService;
+        this.diagramService = diagramService;
     }
 
     /**
@@ -42,14 +49,7 @@ public class DiagramResource {
     @GetMapping("/{flowId}/definition")
     public ResponseEntity<Map<String, Object>> getFlowDefinition(@PathVariable("flowId") Long flowId) {
         log.debug("REST request to get Flow Definition : {}", flowId);
-        // Note: For a real implementation, we would query lists by flowId using a custom repository method.
-        // For MVP, we mock the structure to be returned.
-        Map<String, Object> response = new HashMap<>();
-        response.put("flowId", flowId);
-        response.put("nodes", List.of());
-        response.put("edges", List.of());
-        response.put("switches", List.of());
-        
+        Map<String, Object> response = diagramService.getFlowDefinition(flowId);
         return ResponseEntity.ok(response);
     }
 
@@ -82,11 +82,13 @@ public class DiagramResource {
      * {@code DELETE  /elements} : Delete diagram elements.
      */
     @DeleteMapping("/elements")
-    public ResponseEntity<Void> deleteElements(@RequestBody List<Long> nodeIds) {
-        log.debug("REST request to delete Nodes : {}", nodeIds);
-        for (Long id : nodeIds) {
-            nodeService.delete(id);
-        }
+    public ResponseEntity<Void> deleteElements(
+        @RequestParam(required = false) List<Long> nodeIds,
+        @RequestParam(required = false) List<Long> edgeIds,
+        @RequestParam(required = false) List<Long> switchIds
+    ) {
+        log.debug("REST request to delete diagram elements");
+        diagramService.deleteElements(nodeIds, edgeIds, switchIds);
         return ResponseEntity.noContent().build();
     }
 }

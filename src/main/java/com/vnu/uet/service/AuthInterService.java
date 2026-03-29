@@ -2,15 +2,14 @@ package com.vnu.uet.service;
 
 import com.vnu.uet.domain.UserProfile;
 import com.vnu.uet.repository.UserProfileRepository;
-import org.springframework.stereotype.Service;
-
 import java.util.Optional;
+import org.springframework.stereotype.Service;
 
 @Service
 public class AuthInterService {
-    
+
     private final UserProfileRepository userProfileRepository;
-    
+
     public AuthInterService(UserProfileRepository userProfileRepository) {
         this.userProfileRepository = userProfileRepository;
     }
@@ -19,8 +18,8 @@ public class AuthInterService {
         if (email == null || rawPassword == null) return false;
         Optional<UserProfile> profile = userProfileRepository.findOneByEmail(email);
         if (profile.isPresent()) {
-            // Mocking BCrypt check 
-            String encodedPass = profile.get().getPassword();
+            // Mocking BCrypt check
+            String encodedPass = profile.orElseThrow().getPassword();
             return encodedPass != null && encodedPass.contains(rawPassword);
         }
         return false;

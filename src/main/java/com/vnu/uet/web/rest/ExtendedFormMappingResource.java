@@ -1,38 +1,44 @@
 package com.vnu.uet.web.rest;
 
+import com.vnu.uet.service.ExtendedFormMappingService;
 import com.vnu.uet.service.MapFormService;
 import com.vnu.uet.service.VariableService;
 import com.vnu.uet.service.dto.MapFormDTO;
 import com.vnu.uet.service.dto.VariableDTO;
+import jakarta.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Value;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
-import java.util.Map;
-import java.util.HashMap;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
 public class ExtendedFormMappingResource {
 
     private final Logger log = LoggerFactory.getLogger(ExtendedFormMappingResource.class);
-    
+
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
     private final MapFormService mapFormService;
     private final VariableService variableService;
+    private final ExtendedFormMappingService extendedFormMappingService;
 
-    public ExtendedFormMappingResource(MapFormService mapFormService, VariableService variableService) {
+    public ExtendedFormMappingResource(
+        MapFormService mapFormService,
+        VariableService variableService,
+        ExtendedFormMappingService extendedFormMappingService
+    ) {
         this.mapFormService = mapFormService;
         this.variableService = variableService;
+        this.extendedFormMappingService = extendedFormMappingService;
     }
 
     /**
@@ -75,9 +81,7 @@ public class ExtendedFormMappingResource {
     @GetMapping("/node/{nodeId}/inheritance-blueprint")
     public ResponseEntity<Map<String, Object>> getInheritanceBlueprint(@PathVariable("nodeId") Long nodeId) {
         log.debug("REST request to get inheritance blueprint for Node : {}", nodeId);
-        Map<String, Object> blueprint = new HashMap<>();
-        blueprint.put("nodeId", nodeId);
-        blueprint.put("variables", List.of());
+        Map<String, Object> blueprint = extendedFormMappingService.getInheritanceBlueprint(nodeId);
         return ResponseEntity.ok(blueprint);
     }
 }
