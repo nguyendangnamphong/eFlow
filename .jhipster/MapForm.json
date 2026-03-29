@@ -1,0 +1,44 @@
+{
+  "annotations": {
+    "changelogDate": "20260329013804"
+  },
+  "applications": ["eFlow"],
+  "clientRootFolder": "eFlow",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "targetFormId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "sourceFormId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    }
+  ],
+  "microserviceName": "eFlow",
+  "name": "MapForm",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "variable",
+      "otherEntityRelationshipName": "mapForm",
+      "relationshipName": "variable",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "mapForm",
+      "relationshipName": "node",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

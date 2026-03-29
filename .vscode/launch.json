@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug (Launch)-EAccountApp<eAccount>",
+            "request": "launch",
+            "mainClass": "com.vnu.uet.EAccountApp",
+            "projectName": "e-account",
+            "args": "--spring.profiles.active=dev"
+        }
+    ]
+}

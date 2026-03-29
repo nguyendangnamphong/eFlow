@@ -1,0 +1,25 @@
+
+        ██╗ ██╗   ██╗ ████████╗ ███████╗   ██████╗ ████████╗ ████████╗ ███████╗
+        ██║ ██║   ██║ ╚══██╔══╝ ██╔═══██╗ ██╔════╝ ╚══██╔══╝ ██╔═════╝ ██╔═══██╗
+        ██║ ████████║    ██║    ███████╔╝ ╚█████╗     ██║    ██████╗   ███████╔╝
+  ██╗   ██║ ██╔═══██║    ██║    ██╔════╝   ╚═══██╗    ██║    ██╔═══╝   ██╔══██║
+  ╚██████╔╝ ██║   ██║ ████████╗ ██║       ██████╔╝    ██║    ████████╗ ██║  ╚██╗
+   ╚═════╝  ╚═╝   ╚═╝ ╚═══════╝ ╚═╝       ╚═════╝     ╚═╝    ╚═══════╝ ╚═╝   ╚═╝
+                            https://www.jhipster.tech
+Welcome to JHipster v8.7.3
+
+INFO! Generating jdls eFlow.jdl
+WARNING! The paginate option is deprecated, please use pagination instead.
+ERROR! An error occured while running jhipster:jdl#parseJDL
+ERROR! ERROR! The name 'Switch' is a reserved keyword and can not be used as an entity class name.
+Error: The name 'Switch' is a reserved keyword and can not be used as an entity class name.
+    at checkForReservedClassName (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/converters/validators/entity-validator.js:35:15)
+    at EntityValidator.validate (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/converters/validators/entity-validator.js:29:13)
+    at file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/converters/validators/jdl-with-application-validator.js:78:23
+    at file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/models/jdl-object.js:129:13
+    at Array.forEach (<anonymous>)
+    at JDLObject.forEachEntity (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/models/jdl-object.js:127:36)
+    at checkForEntityErrors (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/converters/validators/jdl-with-application-validator.js:74:19)
+    at file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/converters/validators/jdl-with-application-validator.js:49:17
+    at file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/models/jdl-object.js:73:13
+    at Array.forEach (<anonymous>)

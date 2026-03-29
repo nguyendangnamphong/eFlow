@@ -1,0 +1,89 @@
+{
+  "annotations": {
+    "changelogDate": "20260329013800"
+  },
+  "applications": ["eFlow"],
+  "clientRootFolder": "eFlow",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "flowName",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "flowGroup",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "ownerName",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "superviserName",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "department",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "fieldName": "describe",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    },
+    {
+      "fieldName": "status",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "50"
+    },
+    {
+      "fieldName": "flowStartDate",
+      "fieldType": "Instant"
+    },
+    {
+      "fieldName": "flowEndDate",
+      "fieldType": "Instant"
+    }
+  ],
+  "microserviceName": "eFlow",
+  "name": "Flow",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "flow",
+      "relationshipName": "node",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "relateNode",
+      "otherEntityRelationshipName": "flow",
+      "relationshipName": "relateNode",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "switchNode",
+      "otherEntityRelationshipName": "flow",
+      "relationshipName": "switchNode",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

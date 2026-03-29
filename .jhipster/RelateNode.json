@@ -1,0 +1,54 @@
+{
+  "annotations": {
+    "changelogDate": "20260329013802"
+  },
+  "applications": ["eFlow"],
+  "clientRootFolder": "eFlow",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "hasDemand",
+      "fieldType": "Boolean"
+    },
+    {
+      "fieldName": "childNodeId",
+      "fieldType": "Long"
+    }
+  ],
+  "microserviceName": "eFlow",
+  "name": "RelateNode",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "switchNode",
+      "otherEntityRelationshipName": "relateNode",
+      "relationshipName": "switchNode",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "relateDemand",
+      "otherEntityRelationshipName": "relateNode",
+      "relationshipName": "relateDemand",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "flow",
+      "otherEntityRelationshipName": "relateNode",
+      "relationshipName": "flow",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "relateNode",
+      "relationshipName": "node",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

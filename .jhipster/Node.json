@@ -1,0 +1,52 @@
+{
+  "annotations": {
+    "changelogDate": "20260329013801"
+  },
+  "applications": ["eFlow"],
+  "clientRootFolder": "eFlow",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "nodeType",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "500"
+    }
+  ],
+  "microserviceName": "eFlow",
+  "name": "Node",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "relateNode",
+      "otherEntityRelationshipName": "node",
+      "relationshipName": "relateNode",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "performer",
+      "otherEntityRelationshipName": "node",
+      "relationshipName": "performer",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "mapForm",
+      "otherEntityRelationshipName": "node",
+      "relationshipName": "mapForm",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "flow",
+      "otherEntityRelationshipName": "node",
+      "relationshipName": "flow",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

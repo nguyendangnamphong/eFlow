@@ -1,0 +1,35 @@
+{
+  "annotations": {
+    "changelogDate": "20260329013803"
+  },
+  "applications": ["eFlow"],
+  "clientRootFolder": "eFlow",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "userId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "orderExecution",
+      "fieldType": "Long"
+    }
+  ],
+  "microserviceName": "eFlow",
+  "name": "Performer",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "node",
+      "otherEntityRelationshipName": "performer",
+      "relationshipName": "node",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

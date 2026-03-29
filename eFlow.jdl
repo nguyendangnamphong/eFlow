@@ -1,0 +1,80 @@
+application {
+  config {
+    baseName eFlow
+    applicationType microservice
+    packageName com.vnu.uet
+    authenticationType jwt
+    prodDatabaseType mysql
+    devDatabaseType mysql
+    buildTool maven
+    serverPort 8050
+    skipClient true
+    skipUserManagement true
+  }
+  entities *
+}
+
+entity Flow {
+    flowName String maxlength(100)
+    flowGroup String maxlength(100)
+    ownerName String maxlength(100)
+    superviserName String maxlength(100)
+    department String maxlength(500)
+    describe String maxlength(500)
+    status String maxlength(50)
+    flowStartDate Instant
+    flowEndDate Instant
+}
+
+entity Node {
+    nodeType String maxlength(500)
+}
+
+entity RelateNode {
+    hasDemand Boolean
+    childNodeId Long
+}
+
+entity Performer {
+    userId String maxlength(100)
+    orderExecution Long
+}
+
+entity MapForm {
+    targetFormId String maxlength(100)
+    sourceFormId String maxlength(100)
+}
+
+entity Variable {
+    variableSourceFormId String maxlength(100)
+    variableTargetFormId String maxlength(100)
+    formula String maxlength(500)
+}
+
+entity SwitchNode {
+    formId String maxlength(100)
+    variableId String maxlength(100)
+}
+
+entity RelateDemand {
+    relateDemand String maxlength(500)
+}
+
+// Relationships based on diagram and requirements
+relationship OneToMany {
+    Flow{node} to Node{flow}
+    Flow{relateNode} to RelateNode{flow}
+    Flow{switchNode} to SwitchNode{flow}
+    Node{relateNode} to RelateNode{node}
+    Node{performer} to Performer{node}
+    Node{mapForm} to MapForm{node}
+    MapForm{variable} to Variable{mapForm}
+    RelateNode{switchNode} to SwitchNode{relateNode}
+    RelateNode{relateDemand} to RelateDemand{relateNode}
+    SwitchNode{relateDemand} to RelateDemand{switchNode}
+}
+
+// Service layer implementation
+service * with serviceClass
+dto * with mapstruct
+paginate * with pagination

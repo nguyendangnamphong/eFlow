@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd
+                        http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd">
+    <!--
+        Added the constraints for entity RelateDemand.
+    -->
+    <changeSet id="20260329013807-2" author="jhipster">
+
+        <addForeignKeyConstraint baseColumnNames="relate_node_id"
+                                 baseTableName="relate_demand"
+                                 constraintName="fk_relate_demand__relate_node_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="relate_node"
+                                 />
+
+        <addForeignKeyConstraint baseColumnNames="switch_node_id"
+                                 baseTableName="relate_demand"
+                                 constraintName="fk_relate_demand__switch_node_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="switch_node"
+                                 />
+    </changeSet>
+</databaseChangeLog>

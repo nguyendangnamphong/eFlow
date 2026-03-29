@@ -1,0 +1,51 @@
+{
+  "annotations": {
+    "changelogDate": "20260329013806"
+  },
+  "applications": ["eFlow"],
+  "clientRootFolder": "eFlow",
+  "databaseType": "sql",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "formId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    },
+    {
+      "fieldName": "variableId",
+      "fieldType": "String",
+      "fieldValidateRules": ["maxlength"],
+      "fieldValidateRulesMaxlength": "100"
+    }
+  ],
+  "microserviceName": "eFlow",
+  "name": "SwitchNode",
+  "pagination": "pagination",
+  "relationships": [
+    {
+      "otherEntityName": "relateDemand",
+      "otherEntityRelationshipName": "switchNode",
+      "relationshipName": "relateDemand",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "otherEntityName": "flow",
+      "otherEntityRelationshipName": "switchNode",
+      "relationshipName": "flow",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    },
+    {
+      "otherEntityName": "relateNode",
+      "otherEntityRelationshipName": "switchNode",
+      "relationshipName": "relateNode",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceClass"
+}

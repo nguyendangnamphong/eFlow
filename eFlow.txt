@@ -1,0 +1,113 @@
+﻿1. Database
+* Miêu tả: 
+* Bảng flow: quản lý chung về thông tin các luồng, có thể được dùng cho trang chủ eFlow hoặc khi lấy thông tin lúc vào. 
+
+
+* Bảng node: để quản lý chung các khối tím (có tính thêm cả start và end nữa); tất cả node trong cùng 1 flow thì sẽ có chung flow_id; nếu node_type là “end” thì chắc chắn sẽ không có relate_node_id   
+
+
+   * Bảng relate_node: để quản lý các mũi tên, sẽ dùng node_id để biết vị trí bắt đầu mũi tên và child_node_id để biết cái đích  
+   * Bảng switch: để quản lý mấy cục giao điểm , cùng flow thì chung flow_id
+
+
+      * Bảng relate_demand: để quản lý điều kiện của các luồng mà ra khỏi switch, giúp chia điều hướng node được thực hiện kế tiếp
+      * Bảng performer: quản lý người thực hiện tại 1 node nào đó; lấy user_id để ánh xạ sang service eAccount
+      * Bảng map_form: để lưu trữ 2 form_id mà node đó dùng để luân chuyển dữ liệu 
+      * Bảng variable: để lưu những biến nào sẽ ánh xạ giá trị đến biến nào. 
+      * Phụ chú:
+      * Nếu node_type là “start” hoặc “end” thì nó sẽ không có node_id đó ở bên map_form với performer; nếu node_type là “end” thì sẽ không có node_id cả ở bên relate_node; còn bình thường node_type là “asign” và sẽ có node_id ở cả 3 bảng kia.
+
+
+      * Sẽ chỉ có relate_node_id bên bảng relate_demand khi mà has_demand là true. 
+
+
+      * child_node_id  với node_id trong relate_node có thể sẽ là switch_id hoặc node_id; vì về cơ bản là node lần switch đều chỉ là node nhưng khác biệt về mặt I/O (node chỉ có 1 vào và 1 ra; switch có thể có nhiều vào và nhiều ra) và tính năng (node để tương tác với user và ánh xạ dữ liệu; switch là để kiểm tra dữ liệu rồi chọn hướng sẽ thực thi)
+
+
+      * relate_demand là điều kiện để cho relate_node_id đó được chạy, nó sẽ được lưu dưới dạng string và chương trình sẽ phải có nghĩa vụ đối chiếu nó với form để kiểm tra (ví dụ trong form có: “Người phê duyệt: Chủ tịch” rồi lúc đó thì Tôi có thể tạo ra 2 relate_node_id (1 cái có child_node_id nối đến chủ tích ký và hiện đang liên kết tới cái demand có relate_demand là “người phê duyệt = chủ tịch”; 1 cái có child_node_id của node có giám đốc ký và hiện có relate_demand là “người phê duyệt = giám đốc”) và rồi khi đó thì cái 
+
+
+      * Cái switch thì sẽ lấy lưu form_id và variable_id từ eForm, để có thể lấy giá trị từ variable_id từ cái form_id để đối chiếu với cái relate_demand
+
+
+      * target_form_id và source_form_id để là dữ liêu của form_id trong eForm (khác là 1 cái sẽ là form nguôn còn 1 cái là form đích); variable_source_form_id với variable_target_form_ id cũng tương tự (là id của biến trong form bảng nguồn/đích) ;trong trường hợp 2 form_id giống nhau thì nghĩa mấy cái variable_source_form_id với variable_target_form_id cũng sẽ giống nhau. 
+
+
+      * Các “_id” là bigint, các “_name” là varchar(100), các “_date” là datetime, “order_execution” là bigint, còn lại là varchar(500)
+
+
+      * Về cơ bản thì eFlow chỉ là khung luồng dữ liệu thực thi còn việc luân chuyển dữ liệu là của eRequest (eRequest sẽ sang eFlow này bằng flow_id rồi kiểm tra xem node này do ai ký hoặc các form bên trong sẽ ánh xạ như thế nào, thực hiện luồng như thế nào; nói dễ hiểu thì eFlow như là để quản lý “dàn bài” cho eRequest sang và biết phải  “viết” theo hướng nào/ về cái gì)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      2. API
+      *  Nhóm Quản lý Quy trình: Nhóm này phục vụ giao diện danh sách và thông tin chung của luồng.
+      * POST /api/workflow/init: Khởi tạo bản ghi luồng mới trong bảng flow. Nhận vào flow_name, department, describe
+      * GET /api/workflow/{flowId}/summary: Lấy thông tin hành chính của quy trình (người tạo, ngày bắt đầu, mô tả) để hiển thị ở tab Tổng quan.
+      * PUT /api/workflow/{flowId}/info: Cập nhật các thông tin chung như flow_name, superviser_name, hoặc flow_group_name.
+      * POST /api/workflow/{flowId}/status: Cập nhật trạng thái luồng (Áp dụng/Ngừng áp dụng). eRequest chỉ có thể thấy các luồng có trạng thái "Áp dụng".
+      * DELETE /api/workflow/{flowId}: Xóa toàn bộ cấu hình luồng (chỉ thực hiện được khi luồng chưa có giao dịch thực tế)
+
+
+      * Nhóm Thiết kế Sơ đồ : Xử lý việc vẽ và lưu trữ cấu trúc hình học/logic của sơ đồ.
+      * GET /api/workflow/{flowId}/definition: Trả về toàn bộ danh sách node, relate_node và switch để Frontend vẽ lại sơ đồ quy trình.
+      * POST /api/workflow/{flowId}/node: Thêm một khối mới vào bảng node. Cần chỉ định node_type (Start, End, User Task, Switch)
+      * PUT /api/node/{nodeId}/metadata: Cập nhật thông tin hiển thị của node như tên node hoặc tọa độ (nếu có lưu)
+      * POST /api/workflow/{flowId}/edge: Tạo mũi tên liên kết giữa các node, lưu vào bảng relate_node. Cần node_id (nguồn) và child_node_id (đích).
+      * DELETE /api/workflow/elements: Xóa một hoặc nhiều node/cạnh trên sơ đồ. Hệ thống sẽ tự động xóa các liên kết liên quan trong bảng relate_node
+
+
+      * Nhóm Cấu hình Người thực hiện: Quản lý danh sách nhân sự tham gia vào từng bước
+      * POST /api/node/{nodeId}/performer: Thêm một người thực hiện vào bảng performer. Lưu user_id để ánh xạ sang eAccount và order_execution để quy định thứ tự.
+      * GET /api/node/{nodeId}/performers: Lấy danh sách email và thông tin người thực hiện đã được gán cho node này.
+      * DELETE /api/performer/{performerId}: Loại bỏ một người thực hiện khỏi node
+
+
+
+
+
+
+
+
+
+
+
+
+      * Nhóm API Biểu mẫu & Ánh xạ dữ liệu: Xử lý việc gán eForm và kế thừa dữ liệu giữa các bước
+      * POST /api/node/{nodeId}/map-form: Gán biểu mẫu nguồn và đích cho một node, lưu vào bảng map_form.
+      * POST /api/map-form/{mapFormId}/variable: Tạo liên kết kế thừa giữa 2 biến, lưu vào bảng variable (variable_source_form_id -> variable_target_form_id).
+      * PUT /api/variable/{variableId}/formula: Cấu hình công thức tính toán cho biến kế thừa (ví dụ: Min(), Sum()).
+      * GET /api/node/{nodeId}/inheritance-blueprint: Trả về toàn bộ sơ đồ kế thừa dữ liệu của node đó để hiển thị giao diện nối dây giữa các biến
+
+
+      * Nhóm API Logic Rẽ nhánh: Xử lý các điểm giao và điều kiện điều hướng hồ sơ.
+      * POST /api/switch/{switchId}/config: Cấu hình node kiểm tra cho switch. Lưu form_id và variable_id dùng làm căn cứ để so khớp điều kiện.
+      * POST /api/relate-demand: Lưu điều kiện rẽ nhánh cho một mũi tên, liên kết relate_node_id với chuỗi logic relate_demand.
+      * GET /api/switch/{switchId}/demands: Lấy danh sách tất cả các điều kiện rẽ nhánh của một điểm giao để BI Admin chỉnh sửa.
+
+
+      *  Nhóm Nội bộ cho eRequest: là các API "não bộ" để eRequest gọi mỗi khi hồ sơ chuyển bước.
+      * GET /api/internal/flow/{flowId}/next-node:
+      * Tác dụng: eRequest gửi dữ liệu form hiện tại lên, eFlow đối chiếu với relate_demand trong bảng relate_demand và trả về child_node_id tiếp theo.
+      * GET /api/internal/node/{nodeId}/action-plan:
+      * Tác dụng: Trả về thông tin "gói hành động" cho eRequest: Ai ký (performer), dùng Form nào (map_form) và kế thừa biến nào (variable).
+
+
+      * Nhóm Hỗ trợ: Giúp giao diện eFlow lấy dữ liệu từ các service khác mà không vi phạm bảo mật.
+      * GET /api/proxy/eaccount/users: Tìm kiếm nhanh danh sách nhân viên từ eAccount để gán vào node.
+      * GET /api/proxy/eform/published-forms: Lấy danh sách các biểu mẫu đã "Phát hành" để BI Admin chọn đính kèm vào node

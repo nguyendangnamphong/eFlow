@@ -1,0 +1,24 @@
+{
+  "generator-jhipster": {
+    "applicationType": "microservice",
+    "authenticationType": "jwt",
+    "baseName": "eFlow",
+    "buildTool": "maven",
+    "creationTimestamp": 1773500955113,
+    "databaseType": "sql",
+    "devDatabaseType": "mysql",
+    "entities": ["Flow", "Node", "RelateNode", "Performer", "MapForm", "Variable", "SwitchNode", "RelateDemand"],
+    "jhipsterVersion": "8.7.3",
+    "jwtSecretKey": "NTA1MjQzNWYxNzAzODdiNmFiNDliYTIwMzFhZjAwOWFjNmU3MTgzNDQwZTdlZTM3YzI0NzQwYmM3ZWUyNTI2NTgwNTlhYjAwZTQ2ZDg2ZjUzOWY5NmU2ZTJlMTRkNDg0OWMxMmZhNmM4YzY1MzIzNWUxOGEyMzU0ODFmNDc4MmQ=",
+    "languages": ["vi", "en"],
+    "lastLiquibaseTimestamp": 1774748287000,
+    "nativeLanguage": "vi",
+    "packageName": "com.vnu.uet",
+    "prodDatabaseType": "mysql",
+    "serverPort": "8050",
+    "serviceDiscoveryType": "eureka",
+    "skipClient": true,
+    "skipUserManagement": true,
+    "testFrameworks": ["cypress"]
+  }
+}

@@ -1,0 +1,60 @@
+
+        ██╗ ██╗   ██╗ ████████╗ ███████╗   ██████╗ ████████╗ ████████╗ ███████╗
+        ██║ ██║   ██║ ╚══██╔══╝ ██╔═══██╗ ██╔════╝ ╚══██╔══╝ ██╔═════╝ ██╔═══██╗
+        ██║ ████████║    ██║    ███████╔╝ ╚█████╗     ██║    ██████╗   ███████╔╝
+  ██╗   ██║ ██╔═══██║    ██║    ██╔════╝   ╚═══██╗    ██║    ██╔═══╝   ██╔══██║
+  ╚██████╔╝ ██║   ██║ ████████╗ ██║       ██████╔╝    ██║    ████████╗ ██║  ╚██╗
+   ╚═════╝  ╚═╝   ╚═╝ ╚═══════╝ ╚═╝       ╚═════╝     ╚═╝    ╚═══════╝ ╚═╝   ╚═╝
+                            https://www.jhipster.tech
+Welcome to JHipster v8.7.3
+
+INFO! Generating jdls eFlow.jdl
+ERROR! An error occured while running jhipster:jdl#parseJDL
+ERROR! ERROR! NoViableAltException: Expecting: one of these possible Token sequences:
+  1. ['@']
+  2. [JAVADOC, '@']
+  3. [JAVADOC, 'entity']
+  4. ['entity', NAME]
+  5. ['relationship', RELATIONSHIP_TYPE]
+  6. [JAVADOC, 'enum']
+  7. ['enum', NAME]
+  8. [JAVADOC]
+  9. ['use', NAME]
+  10. [UNARY_OPTION, NAME]
+  11. [UNARY_OPTION, '*']
+  12. [BINARY_OPTION, NAME]
+  13. [BINARY_OPTION, '*']
+  14. ['application', '{']
+  15. ['deployment', '{']
+  16. [NAME, '=']
+but found: 'pagination'
+	at line: 80, column: 1
+Error: NoViableAltException: Expecting: one of these possible Token sequences:
+  1. ['@']
+  2. [JAVADOC, '@']
+  3. [JAVADOC, 'entity']
+  4. ['entity', NAME]
+  5. ['relationship', RELATIONSHIP_TYPE]
+  6. [JAVADOC, 'enum']
+  7. ['enum', NAME]
+  8. [JAVADOC]
+  9. ['use', NAME]
+  10. [UNARY_OPTION, NAME]
+  11. [UNARY_OPTION, '*']
+  12. [BINARY_OPTION, NAME]
+  13. [BINARY_OPTION, '*']
+  14. ['application', '{']
+  15. ['deployment', '{']
+  16. [NAME, '=']
+but found: 'pagination'
+	at line: 80, column: 1
+    at throwParserError (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/parsing/api.js:53:11)
+    at getCst (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/parsing/api.js:37:9)
+    at Module.parse (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/parsing/api.js:25:17)
+    at parse (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/readers/jdl-reader.js:78:38)
+    at parseFromContent (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/core/readers/jdl-reader.js:44:12)
+    at createImporterFromContent (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/lib/jdl/jdl-importer.js:80:21)
+    at JdlGenerator.parseJDL (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/dist/generators/jdl/generator.js:123:34)
+    at JdlGenerator.executeTask (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/node_modules/yeoman-generator/dist/actions/lifecycle.js:258:26)
+    at env.queueTask.once (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/node_modules/yeoman-generator/dist/actions/lifecycle.js:232:56)
+    at runLoop.add.once (file:///C:/Users/Phong/AppData/Roaming/npm/node_modules/generator-jhipster/node_modules/yeoman-environment/dist/environment-base.js:395:23)
