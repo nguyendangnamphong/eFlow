@@ -104,4 +104,7 @@ class BranchingResourceIT {
         restBranchingMockMvc
             .perform(get(API_URL + "/switch/{switchId}/demands", switchNode.getId()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.[*].id").value(hasItem(relateDemand.getId
+            .andExpect(jsonPath("$.[*].id").value(hasItem(relateDemand.getId().intValue())))
+            .andExpect(jsonPath("$.[*].relateDemand").value(hasItem("a == b")));
+    }
+}

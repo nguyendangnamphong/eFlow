@@ -41,4 +41,6 @@ class ProxyResourceIT {
             .perform(get(API_URL + "/eform/published-forms"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
-            .andExpect(jsonPath("$.[*].formName").val
+            .andExpect(jsonPath("$.[*].formName").value(hasItem("Don xin nghi phep")));
+    }
+}

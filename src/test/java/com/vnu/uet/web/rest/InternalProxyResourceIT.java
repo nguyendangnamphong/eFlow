@@ -123,4 +123,8 @@ class InternalProxyResourceIT {
 
         restInternalProxyMockMvc
             .perform(get(API_URL + "/node/{nodeId}/action-plan", node.getId()))
-            .andExpect(status().isOk())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.performers").isArray())
+            .andExpect(jsonPath("$.mapForms").isArray());
+    }
+}

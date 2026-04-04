@@ -121,4 +121,8 @@ public class RelateDemandService {
         LOG.debug("Request to get all RelateDemands by SwitchNode : {}", switchId);
         return relateDemandRepository
             .findAllBySwitchNodeId(switchId)
-           
+            .stream()
+            .map(relateDemandMapper::toDto)
+            .collect(java.util.stream.Collectors.toList());
+    }
+}

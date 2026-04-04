@@ -1,6 +1,5 @@
 package com.vnu.uet.web.rest;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -96,4 +95,7 @@ class InternalAuthResourceIT {
 
         restAuthMockMvc
             .perform(post(API_URL + "/permissions/check-access").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(dto)))
-           
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.hasAccess").value(true));
+    }
+}

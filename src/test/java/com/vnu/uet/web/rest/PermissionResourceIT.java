@@ -87,4 +87,6 @@ class PermissionResourceIT {
             .andExpect(status().isOk());
 
         assertThat(permissionManagementService.getUserPermissions("user-revoke@vnu.edu.vn")).doesNotContain(1);
-        assertThat(permis
+        assertThat(permissionManagementService.getUserPermissions("user-revoke@vnu.edu.vn")).contains(2);
+    }
+}

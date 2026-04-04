@@ -157,4 +157,9 @@ class WorkflowResourceIT {
         long databaseSizeBeforeDelete = flowRepository.count();
 
         restWorkflowMockMvc
-            .perform(delete(API_URL + "/{flowId}", insertedFlow.getId()).accept(MediaType.A
+            .perform(delete(API_URL + "/{flowId}", insertedFlow.getId()).accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isNoContent());
+
+        assertThat(flowRepository.count()).isEqualTo(databaseSizeBeforeDelete - 1);
+    }
+}

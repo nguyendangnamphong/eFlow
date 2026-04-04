@@ -140,4 +140,7 @@ class ExtendedFormMappingResourceIT {
         restFormMappingMockMvc
             .perform(get(API_URL + "/node/{nodeId}/inheritance-blueprint", node.getId()))
             .andExpect(status().isOk())
-            
+            .andExpect(jsonPath("$.mapForms").isArray())
+            .andExpect(jsonPath("$.mapForms.[0].id").value(mapForm.getId().intValue()));
+    }
+}

@@ -130,4 +130,9 @@ class DiagramResourceIT {
         node = nodeRepository.saveAndFlush(node);
 
         restDiagramMockMvc
-            .perform(delete(API_URL + "/elements").param("nodeIds", node.getId().toString(
+            .perform(delete(API_URL + "/elements").param("nodeIds", node.getId().toString()))
+            .andExpect(status().isNoContent());
+
+        assertThat(nodeRepository.existsById(node.getId())).isFalse();
+    }
+}

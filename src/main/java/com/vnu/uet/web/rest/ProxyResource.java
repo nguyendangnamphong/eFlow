@@ -62,4 +62,8 @@ public class ProxyResource {
         Map<String, Object> form2 = new HashMap<>();
         form2.put("formId", "form-002");
         form2.put("formName", "Phieu thanh toan");
-        form
+        forms.add(form2);
+
+        return ResponseEntity.ok(forms);
+    }
+}

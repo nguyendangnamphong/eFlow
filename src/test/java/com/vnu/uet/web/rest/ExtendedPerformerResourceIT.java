@@ -89,4 +89,6 @@ class ExtendedPerformerResourceIT {
             .perform(get(API_URL + "/{nodeId}/performers", node.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.[*].id").value(hasItem(performer.getId().intValue())))
-  
+            .andExpect(jsonPath("$.[*].userId").value(hasItem("user1@vnu.edu.vn")));
+    }
+}

@@ -81,4 +81,6 @@ class AccountProfileResourceIT {
         restAccountMockMvc
             .perform(put(API_URL + "/profile").contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(dto)))
             .andExpect(status().isOk())
- 
+            .andExpect(jsonPath("$.data.firstName").value("Updated Name"));
+    }
+}

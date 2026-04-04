@@ -63,4 +63,7 @@ public class BranchingResource {
     @GetMapping("/switch/{switchId}/demands")
     public ResponseEntity<List<RelateDemandDTO>> getDemandsForSwitch(@PathVariable("switchId") Long switchId) {
         log.debug("REST request to get RelateDemands for SwitchNode : {}", switchId);
-        List<RelateDemandDTO> demands = relateDemandService.findAllBySwitchNode
+        List<RelateDemandDTO> demands = relateDemandService.findAllBySwitchNodeId(switchId);
+        return ResponseEntity.ok(demands);
+    }
+}

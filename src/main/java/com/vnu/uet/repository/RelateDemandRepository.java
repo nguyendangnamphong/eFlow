@@ -10,4 +10,5 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface RelateDemandRepository extends JpaRepository<RelateDemand, Long> {
-    java.util.List<com.vnu.uet.domain.RelateDemand> findAllBySwitchNodeId(Long s
+    java.util.List<com.vnu.uet.domain.RelateDemand> findAllBySwitchNodeId(Long switchId);
+}

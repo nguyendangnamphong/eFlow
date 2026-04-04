@@ -81,4 +81,6 @@ class ManagementAccountResourceIT {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("success"));
 
-        assertThat(userProfi
+        assertThat(userProfileRepository.findOneByEmail("test-management@vnu.edu.vn")).isNotPresent();
+    }
+}
