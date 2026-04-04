@@ -174,4 +174,3 @@ To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`)
 [Node.js]: https://nodejs.org/
 [NPM]: https://www.npmjs.com/
 
-# eFlow
