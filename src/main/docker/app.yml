@@ -3,6 +3,8 @@ name: eflow
 services:
   app:
     image: eflow
+    ports:
+      - 8050:8050
     environment:
       - _JAVA_OPTIONS=-Xmx512m -Xms256m
       - SPRING_PROFILES_ACTIVE=prod,api-docs

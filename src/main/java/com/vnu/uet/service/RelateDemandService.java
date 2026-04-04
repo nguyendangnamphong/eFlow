@@ -109,4 +109,16 @@ public class RelateDemandService {
         LOG.debug("Request to delete RelateDemand : {}", id);
         relateDemandRepository.deleteById(id);
     }
-}
+
+    /**
+     * Get all the relateDemands by switchNodeId.
+     *
+     * @param switchId the id of the switch node.
+     * @return the list of entities.
+     */
+    @Transactional(readOnly = true)
+    public java.util.List<RelateDemandDTO> findAllBySwitchNodeId(Long switchId) {
+        LOG.debug("Request to get all RelateDemands by SwitchNode : {}", switchId);
+        return relateDemandRepository
+            .findAllBySwitchNodeId(switchId)
+           

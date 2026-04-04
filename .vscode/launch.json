@@ -1,13 +1,20 @@
 {
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "type": "java",
-            "name": "Debug (Launch)-EAccountApp<eAccount>",
-            "request": "launch",
-            "mainClass": "com.vnu.uet.EAccountApp",
-            "projectName": "e-account",
-            "args": "--spring.profiles.active=dev"
-        }
-    ]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "EFlowApp",
+      "request": "launch",
+      "mainClass": "com.vnu.uet.EFlowApp",
+      "projectName": "e-flow"
+    },
+    {
+      "type": "java",
+      "name": "Debug (Launch)-EAccountApp<eAccount>",
+      "request": "launch",
+      "mainClass": "com.vnu.uet.EAccountApp",
+      "projectName": "e-account",
+      "args": "--spring.profiles.active=dev"
+    }
+  ]
 }

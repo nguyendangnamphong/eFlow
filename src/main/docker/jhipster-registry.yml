@@ -22,7 +22,7 @@ services:
     # If you want to expose these ports outside your dev PC,
     # remove the "127.0.0.1:" prefix
     ports:
-      - 127.0.0.1:8761:8761
+      - 8761:8761
     healthcheck:
       test: ['CMD', 'curl', '-f', 'http://localhost:8761/management/health']
       interval: 5s

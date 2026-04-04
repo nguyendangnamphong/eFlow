@@ -1,26 +1,25 @@
 package com.vnu.uet.web.rest;
 
-import com.vnu.uet.service.SwitchNodeService;
 import com.vnu.uet.service.RelateDemandService;
-import com.vnu.uet.service.dto.SwitchNodeDTO;
+import com.vnu.uet.service.SwitchNodeService;
 import com.vnu.uet.service.dto.RelateDemandDTO;
+import com.vnu.uet.service.dto.SwitchNodeDTO;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.beans.factory.annotation.Value;
 import tech.jhipster.web.util.ResponseUtil;
-
-import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
 public class BranchingResource {
 
     private final Logger log = LoggerFactory.getLogger(BranchingResource.class);
-    
+
     @Value("${jhipster.clientApp.name}")
     private String applicationName;
 
@@ -37,7 +36,7 @@ public class BranchingResource {
      */
     @PostMapping("/switch/{switchId}/config")
     public ResponseEntity<SwitchNodeDTO> configSwitchNode(
-        @PathVariable("switchId") Long switchId, 
+        @PathVariable("switchId") Long switchId,
         @Valid @RequestBody SwitchNodeDTO configDTO
     ) {
         log.debug("REST request to config SwitchNode : {}", switchId);
@@ -64,8 +63,4 @@ public class BranchingResource {
     @GetMapping("/switch/{switchId}/demands")
     public ResponseEntity<List<RelateDemandDTO>> getDemandsForSwitch(@PathVariable("switchId") Long switchId) {
         log.debug("REST request to get RelateDemands for SwitchNode : {}", switchId);
-        // Note: Needs a proper repository to find demands by switch id
-        List<RelateDemandDTO> demands = List.of();
-        return ResponseEntity.ok(demands);
-    }
-}
+        List<RelateDemandDTO> demands = relateDemandService.findAllBySwitchNode
