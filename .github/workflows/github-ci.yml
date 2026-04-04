@@ -55,15 +55,28 @@ jobs:
           cache: maven
 
       - name: Run Integration Tests
+        id: run-tests
+        continue-on-error: true
         run: |
-          ./mvnw verify "-Dmodernizer.skip=true" "-Denforcer.skip=true"
+          ./mvnw verify "-Dmodernizer.skip=true" "-Denforcer.skip=true" -e
 
-      - name: Upload Test Results
+      - name: Upload Surefire Test Results (Unit Tests)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: surefire-reports
           path: target/surefire-reports/*.xml
+
+      - name: Upload Failsafe Test Results (Integration Tests)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: failsafe-reports
+          path: target/failsafe-reports/*.xml
+
+      - name: Fail build if tests failed
+        if: steps.run-tests.outcome == 'failure'
+        run: exit 1
 
   report:
     name: Test Results Report
@@ -71,15 +84,23 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     steps:
-      - name: Download Test Results
+      - name: Download Surefire (Unit Test) Results
         uses: actions/download-artifact@v4
         with:
-          name: test-results
-          path: test-results
+          name: surefire-reports
+          path: test-results/surefire
+        continue-on-error: true
+
+      - name: Download Failsafe (IT) Results
+        uses: actions/download-artifact@v4
+        with:
+          name: failsafe-reports
+          path: test-results/failsafe
+        continue-on-error: true
 
       - name: Publish Test Report
         uses: dorny/test-reporter@v1
         with:
           name: API Logic Test Report
-          path: test-results/*.xml
+          path: 'test-results/**/*.xml'
           reporter: java-junit
