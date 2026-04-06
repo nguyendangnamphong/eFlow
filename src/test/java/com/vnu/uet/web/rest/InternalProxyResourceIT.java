@@ -80,13 +80,13 @@ class InternalProxyResourceIT {
         SwitchNode switchNode = new SwitchNode().flow(flow);
         switchNode = switchNodeRepository.saveAndFlush(switchNode);
 
-        RelateNode edgeToSwitch = new RelateNode().flow(flow).node(node).childNodeId(switchNode.getId());
+        RelateNode edgeToSwitch = new RelateNode().flow(flow).node(node).childNodeId(switchNode.getId()).hasDemand(true);
         edgeToSwitch = relateNodeRepository.saveAndFlush(edgeToSwitch);
 
         Node nextNode = new Node().nodeType("assign").flow(flow);
         nextNode = nodeRepository.saveAndFlush(nextNode);
 
-        RelateDemand demand = new RelateDemand().relateDemand("amount > 100").switchNode(switchNode).relateNode(new RelateNode().id(999L));
+        RelateDemand demand = new RelateDemand().relateDemand("#amount > 100").switchNode(switchNode).relateNode(new RelateNode().id(999L));
         // Note: The logic in InternalProxyService looks for relateNode in relateDemand
         // Let's create a real relateNode for the destination
         RelateNode edgeFromSwitch = new RelateNode().flow(flow).node(new Node().id(switchNode.getId())).childNodeId(nextNode.getId());

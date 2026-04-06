@@ -109,10 +109,9 @@ public class InternalProxyService {
                         String spelExpression = demand.getRelateDemand();
                         if (evaluateSpel(spelExpression, currentFormData)) {
                             // Nếu điều kiện này Thỏa mãn, ta tìm RelateNode (edge) tiếp theo trỏ từ điều kiện này
-                            // Lưu ý: JDL hiện tại chỉ map RelateDemand <- RelateNode, nên mô hình hơi đơn giản.
-                            // Trong thực tế demand này sẽ chứa childNodeId ở RelateNode liên kết.
-                            // Ở đây ta mô phỏng lấy đích nối từ Edge ban đầu.
-                            nextNodeId = edge.getChildNodeId();
+                            if (demand.getRelateNode() != null) {
+                                nextNodeId = demand.getRelateNode().getChildNodeId();
+                            }
                             break;
                         }
                     }
