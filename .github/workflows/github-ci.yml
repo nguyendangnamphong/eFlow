@@ -75,6 +75,20 @@ jobs:
         run: |
           ./mvnw verify -B -ntp "-Dmodernizer.skip=true" "-Denforcer.skip=true" -e
 
+      - name: Run Dedicated Logic Verification
+        if: always()
+        run: |
+          ./mvnw test -Dtest=APICustomLogicIntTest -DfailIfNoTests=false
+
+      - name: Publish API Logic Test Results
+        if: always()
+        run: |
+          if [ -f target/api-test-results.md ]; then
+            cat target/api-test-results.md >> $GITHUB_STEP_SUMMARY
+          else
+            echo "No API results table found." >> $GITHUB_STEP_SUMMARY
+          fi
+
       # In nội dung báo cáo failsafe ra log để debug ngay trên GitHub Actions
       - name: Print Failsafe Report (Debug)
         if: always()
