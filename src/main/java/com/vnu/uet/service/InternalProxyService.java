@@ -4,14 +4,12 @@ import com.vnu.uet.domain.MapForm;
 import com.vnu.uet.domain.Node;
 import com.vnu.uet.domain.RelateDemand;
 import com.vnu.uet.domain.RelateNode;
-import com.vnu.uet.domain.SwitchNode;
 import com.vnu.uet.domain.Variable;
 import com.vnu.uet.repository.MapFormRepository;
 import com.vnu.uet.repository.NodeRepository;
 import com.vnu.uet.repository.PerformerRepository;
 import com.vnu.uet.repository.RelateDemandRepository;
 import com.vnu.uet.repository.RelateNodeRepository;
-import com.vnu.uet.repository.SwitchNodeRepository;
 import com.vnu.uet.repository.VariableRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,7 +34,6 @@ public class InternalProxyService {
 
     private final NodeRepository nodeRepository;
     private final RelateNodeRepository relateNodeRepository;
-    private final SwitchNodeRepository switchNodeRepository;
     private final RelateDemandRepository relateDemandRepository;
 
     private final PerformerRepository performerRepository;
@@ -48,7 +45,6 @@ public class InternalProxyService {
     public InternalProxyService(
         NodeRepository nodeRepository,
         RelateNodeRepository relateNodeRepository,
-        SwitchNodeRepository switchNodeRepository,
         RelateDemandRepository relateDemandRepository,
         PerformerRepository performerRepository,
         MapFormRepository mapFormRepository,
@@ -56,7 +52,6 @@ public class InternalProxyService {
     ) {
         this.nodeRepository = nodeRepository;
         this.relateNodeRepository = relateNodeRepository;
-        this.switchNodeRepository = switchNodeRepository;
         this.relateDemandRepository = relateDemandRepository;
         this.performerRepository = performerRepository;
         this.mapFormRepository = mapFormRepository;
@@ -88,33 +83,24 @@ public class InternalProxyService {
             Boolean hasDemand = edge.getHasDemand();
 
             if (Boolean.TRUE.equals(hasDemand)) {
-                // Đi qua SwitchNode, cần tính điểm (Evaluate SpEL)
-                List<SwitchNode> switches = switchNodeRepository
+                // Lấy trực tiếp danh sách RelateDemand gắn với edge này
+                List<RelateDemand> demands = relateDemandRepository
                     .findAll()
                     .stream()
-                    .filter(s -> s.getRelateNode() != null && s.getRelateNode().getId().equals(edge.getId()))
+                    .filter(d -> d.getRelateNode() != null && d.getRelateNode().getId().equals(edge.getId()))
                     .collect(Collectors.toList());
 
-                if (!switches.isEmpty()) {
-                    SwitchNode switchNode = switches.get(0); // Mỗi RelateNode thường trỏ đến 1 cụm điều kiện thôi
-
-                    // Lấy tất cả điều kiện
-                    List<RelateDemand> demands = relateDemandRepository
-                        .findAll()
-                        .stream()
-                        .filter(d -> d.getSwitchNode() != null && d.getSwitchNode().getId().equals(switchNode.getId()))
-                        .collect(Collectors.toList());
-
-                    for (RelateDemand demand : demands) {
-                        String spelExpression = demand.getRelateDemand();
-                        if (evaluateSpel(spelExpression, currentFormData)) {
-                            // Nếu điều kiện này Thỏa mãn, ta tìm RelateNode (edge) tiếp theo trỏ từ điều kiện này
-                            if (demand.getRelateNode() != null) {
-                                nextNodeId = demand.getRelateNode().getChildNodeId();
-                            }
-                            break;
-                        }
+                for (RelateDemand demand : demands) {
+                    String spelExpression = demand.getRelateDemand();
+                    if (evaluateSpel(spelExpression, currentFormData)) {
+                        // Điều kiện thỏa mãn → dùng childNodeId của chính edge này
+                        nextNodeId = edge.getChildNodeId();
+                        break;
                     }
+                }
+
+                if (nextNodeId != null) {
+                    break;
                 }
             } else {
                 // Trực tiếp đi - không check điều kiện (Trường hợp thẳng)

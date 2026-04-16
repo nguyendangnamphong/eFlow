@@ -1,5 +1,7 @@
 package com.vnu.uet.web.rest;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vnu.uet.service.InternalProxyService;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,21 +21,34 @@ public class InternalProxyResource {
     private String applicationName;
 
     private final InternalProxyService internalProxyService;
+    private final ObjectMapper objectMapper;
 
-    public InternalProxyResource(InternalProxyService internalProxyService) {
+    public InternalProxyResource(InternalProxyService internalProxyService, ObjectMapper objectMapper) {
         this.internalProxyService = internalProxyService;
+        this.objectMapper = objectMapper;
     }
 
     /**
      * {@code GET  /flow/{flowId}/next-node} : Find next node based on form evaluation.
+     * formData is an optional JSON string passed as a query parameter, e.g.:
+     *   ?formData={"amount":1500}
      */
     @GetMapping("/flow/{flowId}/next-node")
     public ResponseEntity<Map<String, Object>> getNextNode(
         @PathVariable("flowId") Long flowId,
-        @RequestParam(name = "currentNodeId", required = true) Long currentNodeId,
-        @RequestBody(required = false) Map<String, Object> currentFormData
+        @RequestParam(name = "currentNodeId") Long currentNodeId,
+        @RequestParam(name = "formData", required = false) String formDataJson
     ) {
         log.debug("REST request to get next node for Flow : {}", flowId);
+
+        Map<String, Object> currentFormData = new HashMap<>();
+        if (formDataJson != null && !formDataJson.isBlank()) {
+            try {
+                currentFormData = objectMapper.readValue(formDataJson, new TypeReference<Map<String, Object>>() {});
+            } catch (Exception e) {
+                log.warn("Không thể parse formData JSON: {}", formDataJson, e);
+            }
+        }
 
         Map<String, Object> result = internalProxyService.calculateNextNode(flowId, currentNodeId, currentFormData);
         return ResponseEntity.ok(result);

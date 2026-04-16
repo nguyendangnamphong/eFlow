@@ -2,7 +2,6 @@ package com.vnu.uet.web.rest;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vnu.uet.IntegrationTest;
@@ -114,7 +113,11 @@ class APICustomLogicIntTest {
         if ("POST".equalsIgnoreCase(method)) {
             result = mockMvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(body != null ? body : "")).andReturn();
         } else {
-            result = mockMvc.perform(get(url).contentType(MediaType.APPLICATION_JSON).content(body != null ? body : "")).andReturn();
+            var requestBuilder = get(url);
+            if (body != null && !body.isEmpty()) {
+                requestBuilder = requestBuilder.contentType(MediaType.APPLICATION_JSON).content(body);
+            }
+            result = mockMvc.perform(requestBuilder).andReturn();
         }
 
         int status = result.getResponse().getStatus();
@@ -140,33 +143,48 @@ class APICustomLogicIntTest {
     @Test
     @Transactional
     void testNextNode_BranchingLogic() throws Exception {
-        SwitchNode switchNode = new SwitchNode().flow(flow);
-        switchNode = switchNodeRepository.saveAndFlush(switchNode);
-
-        RelateNode edgeToSwitch = new RelateNode().flow(flow).node(node).childNodeId(switchNode.getId()).hasDemand(true);
-        relateNodeRepository.saveAndFlush(edgeToSwitch);
-
+        // Bước 1: Tạo edge từ node -> switch (hasDemand=true, childNodeId sẽ trỏ đến targetNode sau)
         Node targetNode = new Node().nodeType("assign").flow(flow);
         targetNode = nodeRepository.saveAndFlush(targetNode);
 
-        RelateNode edgeFromSwitch = new RelateNode().flow(flow).node(new Node().id(switchNode.getId())).childNodeId(targetNode.getId());
-        edgeFromSwitch = relateNodeRepository.saveAndFlush(edgeFromSwitch);
+        // Edge từ node đến targetNode, đánh dấu hasDemand=true
+        RelateNode edgeToSwitch = new RelateNode()
+            .flow(flow)
+            .node(node)
+            .childNodeId(targetNode.getId())
+            .hasDemand(true);
+        edgeToSwitch = relateNodeRepository.saveAndFlush(edgeToSwitch);
 
-        RelateDemand demand = new RelateDemand().relateDemand("amount > 1000").switchNode(switchNode).relateNode(edgeFromSwitch);
+        // Tạo SwitchNode thuộc flow, giữ ref để service có thể query
+        SwitchNode switchNode = new SwitchNode().flow(flow);
+        switchNode = switchNodeRepository.saveAndFlush(switchNode);
+
+        // Tạo demand liên kết trực tiếp với edgeToSwitch
+        // SpEL expression: #amount > 1000 (phải có prefix # khi dùng context.setVariables)
+        RelateDemand demand = new RelateDemand()
+            .relateDemand("#amount > 1000")
+            .switchNode(switchNode)
+            .relateNode(edgeToSwitch);
         relateDemandRepository.saveAndFlush(demand);
 
+        // Bước 2: Tạo form data JSON để gửi qua query param
         Map<String, Object> formData = new HashMap<>();
         formData.put("amount", 1500);
-        String payload = objectMapper.writeValueAsString(formData);
+        String formDataJson = objectMapper.writeValueAsString(formData);
 
-        MvcResult result = performAndLog("GET", "/api/internal/flow/" + flow.getId() + "/next-node?currentNodeId=" + node.getId(), payload, 
+        String url = "/api/internal/flow/" + flow.getId() + "/next-node"
+            + "?currentNodeId=" + node.getId()
+            + "&formData=" + java.net.URLEncoder.encode(formDataJson, java.nio.charset.StandardCharsets.UTF_8);
+
+        MvcResult result = performAndLog("GET", url, null,
             "Rẽ nhánh Logic: amount > 1000", "Chuyển đến đúng targetNodeId dựa trên demand");
-        
-        if (!result.getResponse().getContentAsString().contains(targetNode.getId().toString())) {
+
+        String responseBody = result.getResponse().getContentAsString();
+        if (!responseBody.contains(targetNode.getId().toString())) {
             TestDetail last = testDetails.get(testDetails.size() - 1);
             last.statusIcon = "🔴";
             last.resultType = "Lỗi Logic Content";
-            last.actual = "Hệ thống trả về nextNodeId sai hoặc thiếu";
+            last.actual = "Hệ thống trả về nextNodeId sai hoặc thiếu. Response: " + responseBody;
         }
     }
 
