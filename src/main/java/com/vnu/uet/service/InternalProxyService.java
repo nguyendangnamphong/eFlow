@@ -10,19 +10,23 @@ import com.vnu.uet.repository.NodeRepository;
 import com.vnu.uet.repository.PerformerRepository;
 import com.vnu.uet.repository.RelateDemandRepository;
 import com.vnu.uet.repository.RelateNodeRepository;
+import com.vnu.uet.repository.SwitchNodeRepository;
 import com.vnu.uet.repository.VariableRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.expression.MapAccessor;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
+import org.springframework.expression.spel.support.StandardTypeConverter;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +39,7 @@ public class InternalProxyService {
     private final NodeRepository nodeRepository;
     private final RelateNodeRepository relateNodeRepository;
     private final RelateDemandRepository relateDemandRepository;
+    private final SwitchNodeRepository switchNodeRepository;
 
     private final PerformerRepository performerRepository;
     private final MapFormRepository mapFormRepository;
@@ -46,6 +51,7 @@ public class InternalProxyService {
         NodeRepository nodeRepository,
         RelateNodeRepository relateNodeRepository,
         RelateDemandRepository relateDemandRepository,
+        SwitchNodeRepository switchNodeRepository,
         PerformerRepository performerRepository,
         MapFormRepository mapFormRepository,
         VariableRepository variableRepository
@@ -53,6 +59,7 @@ public class InternalProxyService {
         this.nodeRepository = nodeRepository;
         this.relateNodeRepository = relateNodeRepository;
         this.relateDemandRepository = relateDemandRepository;
+        this.switchNodeRepository = switchNodeRepository;
         this.performerRepository = performerRepository;
         this.mapFormRepository = mapFormRepository;
         this.variableRepository = variableRepository;
@@ -71,43 +78,41 @@ public class InternalProxyService {
         }
 
         // Lấy danh sách các liên kết ra khỏi node này
-        List<RelateNode> outgoingEdges = relateNodeRepository
-            .findAll()
-            .stream()
-            .filter(e -> e.getNode() != null && e.getNode().getId().equals(currentNodeId))
-            .collect(Collectors.toList());
+        List<RelateNode> outgoingEdges = relateNodeRepository.findAllByFlowIdAndNodeId(flowId, currentNodeId);
 
-        Long nextNodeId = null;
+        Long matchedNextNodeId = null;
+        Long defaultNextNodeId = null;
 
         for (RelateNode edge : outgoingEdges) {
-            Boolean hasDemand = edge.getHasDemand();
+            // evaluate edge demands / default branch
 
-            if (Boolean.TRUE.equals(hasDemand)) {
+            if (!Boolean.TRUE.equals(edge.getHasDemand())) {
+                if (defaultNextNodeId == null) {
+                    defaultNextNodeId = edge.getChildNodeId();
+                }
+                continue;
+            }
                 // Lấy trực tiếp danh sách RelateDemand gắn với edge này
-                List<RelateDemand> demands = relateDemandRepository
-                    .findAll()
-                    .stream()
-                    .filter(d -> d.getRelateNode() != null && d.getRelateNode().getId().equals(edge.getId()))
-                    .collect(Collectors.toList());
+                List<RelateDemand> demands = getDemandsForEdge(edge);
 
                 for (RelateDemand demand : demands) {
                     String spelExpression = demand.getRelateDemand();
                     if (evaluateSpel(spelExpression, currentFormData)) {
                         // Điều kiện thỏa mãn → dùng childNodeId của chính edge này
-                        nextNodeId = edge.getChildNodeId();
+                        matchedNextNodeId = edge.getChildNodeId();
                         break;
                     }
                 }
 
-                if (nextNodeId != null) {
+                if (matchedNextNodeId != null) {
                     break;
                 }
-            } else {
+
                 // Trực tiếp đi - không check điều kiện (Trường hợp thẳng)
-                nextNodeId = edge.getChildNodeId();
-                break;
-            }
+
         }
+
+        Long nextNodeId = matchedNextNodeId != null ? matchedNextNodeId : defaultNextNodeId;
 
         Map<String, Object> result = new HashMap<>();
         result.put("flowId", flowId);
@@ -116,15 +121,52 @@ public class InternalProxyService {
         return result;
     }
 
+    private List<RelateDemand> getDemandsForEdge(RelateNode edge) {
+        List<RelateDemand> directDemands = relateDemandRepository.findAllByRelateNodeId(edge.getId());
+
+        List<com.vnu.uet.domain.SwitchNode> switchNodes = switchNodeRepository.findAllByRelateNodeId(edge.getId());
+        List<RelateDemand> switchDemands = new ArrayList<>();
+        for (com.vnu.uet.domain.SwitchNode switchNode : switchNodes) {
+            switchDemands.addAll(relateDemandRepository.findAllBySwitchNodeId(switchNode.getId()));
+        }
+
+        Map<Long, RelateDemand> merged = new LinkedHashMap<>();
+        for (RelateDemand d : directDemands) {
+            if (d.getId() != null) {
+                merged.put(d.getId(), d);
+            }
+        }
+        for (RelateDemand d : switchDemands) {
+            if (d.getId() != null) {
+                merged.putIfAbsent(d.getId(), d);
+            }
+        }
+
+        List<RelateDemand> result = new ArrayList<>(merged.values());
+        for (RelateDemand d : directDemands) {
+            if (d.getId() == null) {
+                result.add(d);
+            }
+        }
+        for (RelateDemand d : switchDemands) {
+            if (d.getId() == null) {
+                result.add(d);
+            }
+        }
+        return result;
+    }
+
     /**
      * Parse and run Spring Expression Language logic
      */
     private boolean evaluateSpel(String expressionStr, Map<String, Object> dataParams) {
         try {
-            StandardEvaluationContext context = new StandardEvaluationContext();
-            if (dataParams != null) {
-                context.setVariables(dataParams); // set as SpEL variables (#var)
-            }
+            Map<String, Object> safeParams = dataParams != null ? dataParams : Map.of();
+
+            StandardEvaluationContext context = new StandardEvaluationContext(safeParams);
+            context.setTypeConverter(new StandardTypeConverter());
+            context.addPropertyAccessor(new MapAccessor());
+            context.setVariables(safeParams);
             Expression expression = spelParser.parseExpression(expressionStr);
             Boolean result = expression.getValue(context, Boolean.class);
             return Boolean.TRUE.equals(result);

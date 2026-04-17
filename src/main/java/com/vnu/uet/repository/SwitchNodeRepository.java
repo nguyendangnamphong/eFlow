@@ -1,6 +1,7 @@
 package com.vnu.uet.repository;
 
 import com.vnu.uet.domain.SwitchNode;
+import java.util.List;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
@@ -9,4 +10,6 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface SwitchNodeRepository extends JpaRepository<SwitchNode, Long> {}
+public interface SwitchNodeRepository extends JpaRepository<SwitchNode, Long> {
+    List<SwitchNode> findAllByRelateNodeId(Long relateNodeId);
+}

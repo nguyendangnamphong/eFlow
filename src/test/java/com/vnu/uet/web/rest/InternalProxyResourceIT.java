@@ -76,27 +76,21 @@ class InternalProxyResourceIT {
 
     @Test
     @Transactional
-    void getNextNode() throws Exception {
-        SwitchNode switchNode = new SwitchNode().flow(flow);
+    void getNextNode_supportsDemandAttachedOnlyToSwitchNode_andBodyFormData() throws Exception {
+        Node targetNode = new Node().nodeType("assign").flow(flow);
+        targetNode = nodeRepository.saveAndFlush(targetNode);
+
+        RelateNode edge = new RelateNode().flow(flow).node(node).childNodeId(targetNode.getId()).hasDemand(true);
+        edge = relateNodeRepository.saveAndFlush(edge);
+
+        SwitchNode switchNode = new SwitchNode().flow(flow).relateNode(edge);
         switchNode = switchNodeRepository.saveAndFlush(switchNode);
 
-        RelateNode edgeToSwitch = new RelateNode().flow(flow).node(node).childNodeId(switchNode.getId()).hasDemand(true);
-        edgeToSwitch = relateNodeRepository.saveAndFlush(edgeToSwitch);
-
-        Node nextNode = new Node().nodeType("assign").flow(flow);
-        nextNode = nodeRepository.saveAndFlush(nextNode);
-
-        RelateDemand demand = new RelateDemand().relateDemand("#amount > 100").switchNode(switchNode).relateNode(new RelateNode().id(999L));
-        // Note: The logic in InternalProxyService looks for relateNode in relateDemand
-        // Let's create a real relateNode for the destination
-        RelateNode edgeFromSwitch = new RelateNode().flow(flow).node(new Node().id(switchNode.getId())).childNodeId(nextNode.getId());
-        edgeFromSwitch = relateNodeRepository.saveAndFlush(edgeFromSwitch);
-
-        demand.setRelateNode(edgeFromSwitch);
+        RelateDemand demand = new RelateDemand().relateDemand("amount > 1000").switchNode(switchNode);
         relateDemandRepository.saveAndFlush(demand);
 
         Map<String, Object> formData = new HashMap<>();
-        formData.put("amount", 150);
+        formData.put("amount", 1500);
 
         restInternalProxyMockMvc
             .perform(
@@ -106,7 +100,61 @@ class InternalProxyResourceIT {
                     .content(om.writeValueAsBytes(formData))
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.nextNodeId").value(nextNode.getId().intValue()));
+            .andExpect(jsonPath("$.nextNodeId").value(targetNode.getId().intValue()));
+    }
+
+    @Test
+    @Transactional
+    void getNextNode_supportsHashVariableSyntax_andQueryFormData() throws Exception {
+        Node targetNode = new Node().nodeType("assign").flow(flow);
+        targetNode = nodeRepository.saveAndFlush(targetNode);
+
+        RelateNode edge = new RelateNode().flow(flow).node(node).childNodeId(targetNode.getId()).hasDemand(true);
+        edge = relateNodeRepository.saveAndFlush(edge);
+
+        RelateDemand demand = new RelateDemand().relateDemand("#amount > 1000").relateNode(edge);
+        relateDemandRepository.saveAndFlush(demand);
+
+        restInternalProxyMockMvc
+            .perform(
+                get(API_URL + "/flow/{flowId}/next-node", flow.getId())
+                    .param("currentNodeId", node.getId().toString())
+                    .param("formData", "{\"amount\":1500}")
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nextNodeId").value(targetNode.getId().intValue()));
+    }
+
+    @Test
+    @Transactional
+    void getNextNode_usesDefaultBranch_whenNoDemandMatches() throws Exception {
+        Node conditionalTarget = new Node().nodeType("assign").flow(flow);
+        conditionalTarget = nodeRepository.saveAndFlush(conditionalTarget);
+
+        Node defaultTarget = new Node().nodeType("assign").flow(flow);
+        defaultTarget = nodeRepository.saveAndFlush(defaultTarget);
+
+        RelateNode conditionalEdge = new RelateNode().flow(flow).node(node).childNodeId(conditionalTarget.getId()).hasDemand(true);
+        conditionalEdge = relateNodeRepository.saveAndFlush(conditionalEdge);
+
+        RelateDemand demand = new RelateDemand().relateDemand("amount > 1000").relateNode(conditionalEdge);
+        relateDemandRepository.saveAndFlush(demand);
+
+        RelateNode defaultEdge = new RelateNode().flow(flow).node(node).childNodeId(defaultTarget.getId()).hasDemand(false);
+        relateNodeRepository.saveAndFlush(defaultEdge);
+
+        Map<String, Object> formData = new HashMap<>();
+        formData.put("amount", 10);
+
+        restInternalProxyMockMvc
+            .perform(
+                get(API_URL + "/flow/{flowId}/next-node", flow.getId())
+                    .param("currentNodeId", node.getId().toString())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(om.writeValueAsBytes(formData))
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nextNodeId").value(defaultTarget.getId().intValue()));
     }
 
     @Test
@@ -125,6 +173,7 @@ class InternalProxyResourceIT {
             .perform(get(API_URL + "/node/{nodeId}/action-plan", node.getId()))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.performers").isArray())
-            .andExpect(jsonPath("$.mapForms").isArray());
+            .andExpect(jsonPath("$.forms").isArray())
+            .andExpect(jsonPath("$.forms[0].variables").isArray());
     }
 }

@@ -37,7 +37,8 @@ public class InternalProxyResource {
     public ResponseEntity<Map<String, Object>> getNextNode(
         @PathVariable("flowId") Long flowId,
         @RequestParam(name = "currentNodeId") Long currentNodeId,
-        @RequestParam(name = "formData", required = false) String formDataJson
+        @RequestParam(name = "formData", required = false) String formDataJson,
+        @RequestBody(required = false) Map<String, Object> formDataBody
     ) {
         log.debug("REST request to get next node for Flow : {}", flowId);
 
@@ -48,6 +49,8 @@ public class InternalProxyResource {
             } catch (Exception e) {
                 log.warn("Không thể parse formData JSON: {}", formDataJson, e);
             }
+        } else if (formDataBody != null && !formDataBody.isEmpty()) {
+            currentFormData = formDataBody;
         }
 
         Map<String, Object> result = internalProxyService.calculateNextNode(flowId, currentNodeId, currentFormData);
