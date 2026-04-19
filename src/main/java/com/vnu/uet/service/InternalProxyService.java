@@ -163,10 +163,20 @@ public class InternalProxyService {
         try {
             Map<String, Object> safeParams = dataParams != null ? dataParams : Map.of();
 
-            StandardEvaluationContext context = new StandardEvaluationContext(safeParams);
+            StandardEvaluationContext context = new StandardEvaluationContext();
+            context.setRootObject(safeParams);
             context.setTypeConverter(new StandardTypeConverter());
             context.addPropertyAccessor(new MapAccessor());
-            context.setVariables(safeParams);
+            // Support both syntaxes:
+            // - "amount > 1000" (root map property access via MapAccessor)
+            // - "#amount > 1000" (variable access)
+            // Also expose the full map as "#formData".
+            context.setVariable("formData", safeParams);
+            safeParams.forEach((key, value) -> {
+                if (key != null && key.matches("[A-Za-z_$][A-Za-z0-9_$]*")) {
+                    context.setVariable(key, value);
+                }
+            });
             Expression expression = spelParser.parseExpression(expressionStr);
             Boolean result = expression.getValue(context, Boolean.class);
             return Boolean.TRUE.equals(result);
