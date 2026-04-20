@@ -3,6 +3,8 @@ package com.vnu.uet.web.rest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vnu.uet.service.InternalProxyService;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -45,7 +47,11 @@ public class InternalProxyResource {
         Map<String, Object> currentFormData = new HashMap<>();
         if (formDataJson != null && !formDataJson.isBlank()) {
             try {
-                currentFormData = objectMapper.readValue(formDataJson, new TypeReference<Map<String, Object>>() {});
+                String candidate = formDataJson;
+                if (candidate.contains("%")) {
+                    candidate = URLDecoder.decode(candidate, StandardCharsets.UTF_8);
+                }
+                currentFormData = objectMapper.readValue(candidate, new TypeReference<Map<String, Object>>() {});
             } catch (Exception e) {
                 log.warn("Không thể parse formData JSON: {}", formDataJson, e);
             }

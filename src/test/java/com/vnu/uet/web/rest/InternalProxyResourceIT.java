@@ -9,6 +9,8 @@ import com.vnu.uet.IntegrationTest;
 import com.vnu.uet.domain.*;
 import com.vnu.uet.repository.*;
 import jakarta.persistence.EntityManager;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -120,6 +122,30 @@ class InternalProxyResourceIT {
                 get(API_URL + "/flow/{flowId}/next-node", flow.getId())
                     .param("currentNodeId", node.getId().toString())
                     .param("formData", "{\"amount\":1500}")
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.nextNodeId").value(targetNode.getId().intValue()));
+    }
+
+    @Test
+    @Transactional
+    void getNextNode_supportsUrlEncodedQueryFormData() throws Exception {
+        Node targetNode = new Node().nodeType("assign").flow(flow);
+        targetNode = nodeRepository.saveAndFlush(targetNode);
+
+        RelateNode edge = new RelateNode().flow(flow).node(node).childNodeId(targetNode.getId()).hasDemand(true);
+        edge = relateNodeRepository.saveAndFlush(edge);
+
+        RelateDemand demand = new RelateDemand().relateDemand("#amount > 1000").relateNode(edge);
+        relateDemandRepository.saveAndFlush(demand);
+
+        String encoded = URLEncoder.encode("{\"amount\":1500}", StandardCharsets.UTF_8);
+
+        restInternalProxyMockMvc
+            .perform(
+                get(API_URL + "/flow/{flowId}/next-node", flow.getId())
+                    .param("currentNodeId", node.getId().toString())
+                    .param("formData", encoded)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.nextNodeId").value(targetNode.getId().intValue()));
