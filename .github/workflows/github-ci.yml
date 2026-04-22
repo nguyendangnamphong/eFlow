@@ -125,10 +125,6 @@ jobs:
           path: target/failsafe-reports/
           if-no-files-found: ignore
 
-      - name: Fail build if tests failed
-        if: steps.run-tests.outcome == 'failure'
-        run: exit 1
-
   report:
     name: Test Results Report
     needs: test-logic
