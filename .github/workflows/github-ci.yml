@@ -124,37 +124,3 @@ jobs:
           name: failsafe-reports
           path: target/failsafe-reports/
           if-no-files-found: ignore
-
-  report:
-    name: Test Results Report
-    needs: test-logic
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      # dorny/test-reporter cần checkout để đọc danh sách file git
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Download Surefire (Unit Test) Results
-        uses: actions/download-artifact@v4
-        with:
-          name: surefire-reports
-          path: test-results/surefire
-        continue-on-error: true
-
-      - name: Download Failsafe (IT) Results
-        uses: actions/download-artifact@v4
-        with:
-          name: failsafe-reports
-          path: test-results/failsafe
-        continue-on-error: true
-
-      - name: Publish Test Report
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
-        with:
-          files: |
-            test-results/**/*.xml
-            !test-results/**/*summary.xml
-          check_name: 'API Logic Test Report'
-          comment_mode: off # Tránh spam comment, chỉ hiện trong tab Checks
