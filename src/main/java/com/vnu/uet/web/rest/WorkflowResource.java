@@ -1,8 +1,11 @@
 package com.vnu.uet.web.rest;
 
 import com.vnu.uet.service.FlowService;
+import com.vnu.uet.service.dto.FlowBasicDTO;
 import com.vnu.uet.service.dto.FlowDTO;
+import com.vnu.uet.service.dto.FlowGroupRequestDTO;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +32,28 @@ public class WorkflowResource {
 
     public WorkflowResource(FlowService flowService) {
         this.flowService = flowService;
+    }
+
+    /**
+     * {@code GET /group} : Get distinct flow group names for launched flows (describe == "launch").
+     * @return a list of distinct flow group names.
+     */
+    @GetMapping("/group")
+    public ResponseEntity<List<String>> getLaunchedFlowGroups() {
+        log.debug("REST request to get launched flow groups");
+        return ResponseEntity.ok(flowService.findLaunchedFlowGroups());
+    }
+
+    /**
+     * {@code POST /} : Get basic flows info by flow_group_name.
+     * Request body example: {"flow_group_name":"A"}
+     * @return list of {flowId, flowName}.
+     */
+    @PostMapping
+    public ResponseEntity<List<FlowBasicDTO>> getFlowsByGroup(@RequestBody(required = false) FlowGroupRequestDTO request) {
+        String groupName = request != null ? request.getFlowGroupName() : null;
+        log.debug("REST request to get flows by group: {}", groupName);
+        return ResponseEntity.ok(flowService.findFlowsByGroup(groupName));
     }
 
     /**

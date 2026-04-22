@@ -4,7 +4,9 @@ import com.vnu.uet.domain.*;
 import com.vnu.uet.domain.Flow;
 import com.vnu.uet.repository.*;
 import com.vnu.uet.repository.FlowRepository;
+import com.vnu.uet.service.dto.FlowBasicDTO;
 import com.vnu.uet.service.dto.FlowDTO;
+import java.util.List;
 import com.vnu.uet.service.mapper.FlowMapper;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -125,6 +127,25 @@ public class FlowService {
     public Optional<FlowDTO> findOne(Long id) {
         LOG.debug("Request to get Flow : {}", id);
         return flowRepository.findById(id).map(flowMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public List<String> findLaunchedFlowGroups() {
+        LOG.debug("Request to get distinct launched flow groups");
+        return flowRepository.findDistinctLaunchedFlowGroups();
+    }
+
+    @Transactional(readOnly = true)
+    public List<FlowBasicDTO> findFlowsByGroup(String flowGroupName) {
+        LOG.debug("Request to get flows by group: {}", flowGroupName);
+        if (flowGroupName == null || flowGroupName.isBlank()) {
+            return List.of();
+        }
+        return flowRepository
+            .findAllByFlowGroupOrderByIdAsc(flowGroupName)
+            .stream()
+            .map(p -> new FlowBasicDTO(p.getId(), p.getFlowName()))
+            .toList();
     }
 
     /**

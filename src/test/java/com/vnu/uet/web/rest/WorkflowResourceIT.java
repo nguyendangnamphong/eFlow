@@ -9,10 +9,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vnu.uet.IntegrationTest;
 import com.vnu.uet.domain.Flow;
 import com.vnu.uet.repository.FlowRepository;
+import com.vnu.uet.service.dto.FlowGroupRequestDTO;
 import com.vnu.uet.service.dto.FlowDTO;
 import com.vnu.uet.service.mapper.FlowMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.AfterEach;
@@ -60,7 +63,7 @@ class WorkflowResourceIT {
 
     private Flow flow;
 
-    private Flow insertedFlow;
+    private final List<Flow> insertedFlows = new ArrayList<>();
 
     public static Flow createEntity() {
         return new Flow().flowName(DEFAULT_FLOW_NAME).department(DEFAULT_DEPARTMENT).describe(DEFAULT_DESCRIBE);
@@ -73,9 +76,9 @@ class WorkflowResourceIT {
 
     @AfterEach
     public void cleanup() {
-        if (insertedFlow != null) {
-            flowRepository.delete(insertedFlow);
-            insertedFlow = null;
+        if (!insertedFlows.isEmpty()) {
+            flowRepository.deleteAll(insertedFlows);
+            insertedFlows.clear();
         }
     }
 
@@ -98,7 +101,8 @@ class WorkflowResourceIT {
     @Test
     @Transactional
     void getWorkflowSummary() throws Exception {
-        insertedFlow = flowRepository.saveAndFlush(flow);
+        Flow insertedFlow = flowRepository.saveAndFlush(flow);
+        insertedFlows.add(insertedFlow);
 
         restWorkflowMockMvc
             .perform(get(API_URL + "/{flowId}/summary", insertedFlow.getId()))
@@ -111,7 +115,8 @@ class WorkflowResourceIT {
     @Test
     @Transactional
     void updateWorkflowInfo() throws Exception {
-        insertedFlow = flowRepository.saveAndFlush(flow);
+        Flow insertedFlow = flowRepository.saveAndFlush(flow);
+        insertedFlows.add(insertedFlow);
         long databaseSizeBeforeUpdate = flowRepository.count();
 
         Flow updatedFlow = flowRepository.findById(insertedFlow.getId()).orElseThrow();
@@ -135,7 +140,8 @@ class WorkflowResourceIT {
     @Test
     @Transactional
     void updateWorkflowStatus() throws Exception {
-        insertedFlow = flowRepository.saveAndFlush(flow);
+        Flow insertedFlow = flowRepository.saveAndFlush(flow);
+        insertedFlows.add(insertedFlow);
 
         String newStatus = "ApDung";
         restWorkflowMockMvc
@@ -153,7 +159,7 @@ class WorkflowResourceIT {
     @Test
     @Transactional
     void deleteWorkflow() throws Exception {
-        insertedFlow = flowRepository.saveAndFlush(flow);
+        Flow insertedFlow = flowRepository.saveAndFlush(flow);
         long databaseSizeBeforeDelete = flowRepository.count();
 
         restWorkflowMockMvc
@@ -161,5 +167,67 @@ class WorkflowResourceIT {
             .andExpect(status().isNoContent());
 
         assertThat(flowRepository.count()).isEqualTo(databaseSizeBeforeDelete - 1);
+    }
+
+    @Test
+    @Transactional
+    void getLaunchedFlowGroups_returnsDistinctNonBlankOnly() throws Exception {
+        Flow launchedA1 = new Flow().flowName("A1").flowGroup("A").describe("launch").department(DEFAULT_DEPARTMENT);
+        Flow launchedA2 = new Flow().flowName("A2").flowGroup("A").describe("launch").department(DEFAULT_DEPARTMENT);
+        Flow draftB = new Flow().flowName("B1").flowGroup("B").describe("draft").department(DEFAULT_DEPARTMENT);
+        Flow launchedNull = new Flow().flowName("N1").flowGroup(null).describe("launch").department(DEFAULT_DEPARTMENT);
+        Flow launchedBlank = new Flow().flowName("E1").flowGroup("   ").describe("launch").department(DEFAULT_DEPARTMENT);
+
+        insertedFlows.add(flowRepository.saveAndFlush(launchedA1));
+        insertedFlows.add(flowRepository.saveAndFlush(launchedA2));
+        insertedFlows.add(flowRepository.saveAndFlush(draftB));
+        insertedFlows.add(flowRepository.saveAndFlush(launchedNull));
+        insertedFlows.add(flowRepository.saveAndFlush(launchedBlank));
+
+        restWorkflowMockMvc
+            .perform(get(API_URL + "/group"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$[0]").value("A"))
+            .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    @Transactional
+    void postWorkflow_returnsFlowsByMatchingGroupName() throws Exception {
+        Flow a1 = new Flow().flowName("Flow 1").flowGroup("A").describe("launch").department(DEFAULT_DEPARTMENT);
+        Flow a2 = new Flow().flowName("Flow 2").flowGroup("A").describe("draft").department(DEFAULT_DEPARTMENT);
+        Flow b1 = new Flow().flowName("Flow 3").flowGroup("B").describe("launch").department(DEFAULT_DEPARTMENT);
+
+        insertedFlows.add(flowRepository.saveAndFlush(a1));
+        insertedFlows.add(flowRepository.saveAndFlush(a2));
+        insertedFlows.add(flowRepository.saveAndFlush(b1));
+
+        FlowGroupRequestDTO request = new FlowGroupRequestDTO();
+        request.setFlowGroupName("A");
+
+        restWorkflowMockMvc
+            .perform(post(API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].flowId").exists())
+            .andExpect(jsonPath("$[0].flowName").exists());
+    }
+
+    @Test
+    @Transactional
+    void postWorkflow_blankGroup_returnsEmptyList() throws Exception {
+        FlowGroupRequestDTO request = new FlowGroupRequestDTO();
+        request.setFlowGroupName("   ");
+
+        restWorkflowMockMvc
+            .perform(post(API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(request)))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_VALUE))
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$.length()").value(0));
     }
 }
